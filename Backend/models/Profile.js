@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const ProfileSchema = new mongoose.Schema({
+const ProfileSchema = new Schema({
     user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'user'
     },
     company: {
@@ -14,12 +15,17 @@ const ProfileSchema = new mongoose.Schema({
     location: {
         type: String
     },
+    // status should be a single string, not an array
+    // type: [String],
     status: {
         type: String,
-        required: true       
+        required: true
     },
+    // skills should be an array of strings
+    // type: String
     skills: {
-        type: String
+        type: [String],
+        required: true
     },
     bio: {
         type: String
@@ -60,55 +66,64 @@ const ProfileSchema = new mongoose.Schema({
         {
             school: {
                 type: String,
-                required:true
+                required: true
             },
             degree: {
                 type: String,
-                required:true
+                required: true
             },
             discipline: {
                 type: String,
                 required: true
-                
             },
+            // ❌ Incorrect usage: string: Date
+            // string: Date,
             from: {
-                string: Date,
-                required:true
+                type: Date,
+                required: true
             },
+            // string: Date
             to: {
-                string: Date
+                type: Date
             },
+            // string: Boolean,
             current: {
-                string: Boolean,
-                required: false
+                type: Boolean,
+                default: false
             },
             description: {
-                type:String
+                type: String
             }
-            
         }
     ],
     social: {
         youtube: {
-            type:String
+            type: String
         },
-        x: {
-            type:String
-        },
-        linkedin: {
-            type:String
-        },
-        instagram: {
-            type:String
+        // x is unclear – rename to twitter for clarity
+        // x: {
+        //     type: String
+        // },
+        twitter: {
+            type: String
         },
         facebook: {
-            type:String
+            type: String
+        },
+        linkedin: {
+            type: String
+        },
+        instagram: {
+            type: String
         }
     },
     date: {
         type: Date,
-        default:Date.now
+        default: Date.now
     }
 });
 
-module.exports =Profile= mongoose.model('profile', ProfileSchema);
+// ❌ Non-standard and redundant
+// module.exports =Profile= mongoose.model('profile', ProfileSchema);
+
+module.exports = mongoose.model('profile', ProfileSchema);
