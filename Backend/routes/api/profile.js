@@ -142,6 +142,8 @@ router.delete('/',auth, async (req, res) => {
 
         //Remove profiles
         await Profile.findOneAndRemove({ user: req.user.id });
+       
+
         //Remove user
         await Profile.findOneAndRemove({_id: req.user.id});
 
@@ -158,7 +160,7 @@ router.delete('/',auth, async (req, res) => {
 router.put('/experience', auth, [
     check('title', 'Title is required').not().isEmpty(),
     check('company', 'Company is required').not().isEmpty(),
-    check('from','Period is required').not().isEmpty()
+    check('from','From date is required').not().isEmpty()
 ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -193,7 +195,91 @@ router.put('/experience', auth, [
             res.status(500).send('Server Error');
         }
     
+    });
+router.delete('/experience/:exp_id', auth, async (req, res) => {
+    try {
+        const profile = await Profile.findOne({
+            user: req.user.id
+        });
+
+        //get remove index
+        const removeIndex = profile.experience.map(item => item.id).indexOf(req.params.exp_id);
+        profile.experience.splice(removeIndex, 1);
+        await profile.save();
+        res.json(profile);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+        
+    }
 });
+
+    // @route   PUT api/profile/education
+// @desc    Add education entry to user profile
+// @access  Private
+router.put(
+  '/education',
+  auth,
+  [
+    // Validate required fields
+    check('school', 'School is required').not().isEmpty(),
+    check('degree', 'Degree is required').not().isEmpty(),
+    check('discipline', 'Discipline is required').not().isEmpty(), // Typo fixed
+    check('from', 'From date is required').not().isEmpty()
+  ],
+  async (req, res) => {
+    // Gather and validate any input errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Destructure fields from request body
+    const {
+      school,
+      degree,
+      discipline,
+      from,
+      to,
+      current,
+      description
+    } = req.body;
+
+    // Build new education object
+    const newEdu = {
+      school,
+      degree,
+      discipline,
+      from,
+      to,
+      current,
+      description
+    };
+
+    try {
+      // Find the user's profile
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      // Handle case where profile is not found
+      if (!profile) {
+        return res.status(400).json({ msg: 'Profile not found' });
+      }
+
+      // Add new education to the beginning of the array
+      profile.education.unshift(newEdu);
+
+      // Save the updated profile
+      await profile.save();
+
+      // Send back the updated profile
+      res.json(profile);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
 
 
 module.exports = router;
